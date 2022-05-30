@@ -89,6 +89,21 @@ class Player {
 
 }
 
+function handleAnimateMoves(){
+    if(keys.right.pressed){
+        player.velocity.x = 5
+    }
+
+
+    else if(keys.left.pressed){
+        player.velocity.x = -5
+    }
+
+
+    else{
+        player.velocity.x = 0
+    }
+}
 
 const player = new Player()
 // player.updatePlayer()
@@ -102,7 +117,146 @@ const animate = () => {
 
 
 
-    // handleAnimateMoves()
+    handleAnimateMoves()
 }
 
 animate()   
+
+// keys handler
+
+// Animations
+
+/*
+When the key is down, it is pressed, when the key is up it was unpressed
+*/
+
+window.addEventListener('keydown', ({ keyCode }) => {
+    console.log(keyCode)
+    handleCrontrolPlayer(keyCode)  
+})
+
+
+window.addEventListener('keyup', ({ keyCode }) => {
+    console.log(keyCode)
+    handleStopPlayer(keyCode)  
+})
+
+function handleCrontrolPlayer(keyCode){
+    switch(keyCode){
+        // For WASD
+        case 87: //w
+            actions.jump()
+            break;
+        case 65: //a
+            actions.goLeft()
+            break;
+        case 83: //s
+            actions.goDown()
+            break;
+        case 68: //d
+            actions.goRight()
+            break;
+              
+        // For Arrows
+        case 38: //up
+            actions.jump()
+            break;
+        case 37: //left
+            actions.goLeft()
+            break;
+        case 40: //down
+            actions.goDown()
+            break;
+        case 39: //right
+            actions.goRight()
+            break;
+    }
+
+    console.log(keys.right.pressed)
+}
+
+function handleStopPlayer(keyCode){
+    switch(keyCode){
+        // For WASD
+        case 87: //w
+            actions.stopJump()
+            break;
+        case 65: //a
+            actions.stopLeft()
+            break;
+        case 83: //s
+            actions.stopDown()
+            break;
+        case 68: //d
+            actions.stopRight()
+            break;
+              
+        // For Arrows
+        case 38: //up
+            actions.stopJump()
+            break;
+        case 37: //left
+            actions.stopLeft()
+            break;
+        case 40: //down
+            actions.stopDown()
+            break;
+        case 39: //right
+            actions.stopRight()
+            break;
+    }
+
+    console.log(keys.right.pressed)
+
+}
+
+
+class actions{
+    static jump(){
+        keys.up.pressed = true
+        player.velocity.y -= 20
+        console.log("run")
+    }
+
+    static goLeft(){
+        keys.left.pressed = true
+        // player.velocity.x -= 20
+    }
+
+
+    static goDown(){
+        keys.down.pressed = true
+        player.velocity.y += 20
+    }
+
+    static goRight(){
+        keys.right.pressed = true
+        // player.velocity.x = 20
+    }
+
+
+    static stopJump(){
+        keys.up.pressed = false
+        console.log("stop")
+    }
+
+
+    static stopLeft(){
+        keys.left.pressed = false
+        console.log("stop")
+
+    }
+
+
+    static stopDown(){
+        keys.down.pressed = false
+        console.log("stop")
+
+    }
+
+    static stopRight(){
+        keys.right.pressed = false
+        console.log("stop")
+
+    }
+}
