@@ -141,19 +141,31 @@ function handleAnimateMoves(){
         // starts to animate the background scrolling to right
         if(keys.right.pressed){
             // it imitates a parallax
-            platform.position.x -=5
-        }
+            
+            platforms.map(
+                platform => {
+                    platform.position.x -=5
+                    }
+                )
+            }
 
         // starts to animate the background scrolling to left
         if(keys.left.pressed){
             // it imitates a parallax
-            platform.position.x +=5
+
+             
+            platforms.map(
+                platform => {
+                    platform.position.x +=5
+                    }
+                )
+            }
+         
         }
-    }
 }
 
 const player = new Player()
-const platform = new Platform()
+const platforms = [new Platform()]
 // player.updatePlayer()
 
 const animate = () => {
@@ -163,11 +175,20 @@ const animate = () => {
     c.clearRect(0, 0, canvas.width, canvas.height)    
     player.updatePlayer()
 
+
+
+    platforms.map(
+        platform => {
+            platform.draw()
+        }
+    )
     // platform updates!
-    platform.draw()
 
     // animate moves
     handleAnimateMoves()
+
+    platforms.map(
+        platform => {
 
     
     // left side collision
@@ -200,6 +221,8 @@ const animate = () => {
          ){
             player.velocity.y = 0
         }
+        }
+    )
 }
 
 animate()   
