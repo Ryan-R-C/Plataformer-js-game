@@ -89,6 +89,33 @@ class Player {
 
 }
 
+
+
+class Platform {
+    constructor(){
+        this.position = {
+            x: 200,
+            y: 200
+        }
+
+        this.width  = 200; 
+        this.height = 20;
+    }
+
+    draw(){
+        c.style = "blue"
+        c.fillRect(
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height,
+        )
+    }
+
+}
+
+
+
 function handleAnimateMoves(){
     if(keys.right.pressed){
         player.velocity.x = 5
@@ -106,6 +133,7 @@ function handleAnimateMoves(){
 }
 
 const player = new Player()
+const platform = new Platform()
 // player.updatePlayer()
 
 const animate = () => {
@@ -115,6 +143,8 @@ const animate = () => {
     c.clearRect(0, 0, canvas.width, canvas.height)    
     player.updatePlayer()
 
+    // platform updates!
+    platform.draw()
 
 
     handleAnimateMoves()
