@@ -1,11 +1,15 @@
 
-const canvas = document.querySelector('canvas')
-const c = canvas.getContext('2d')
+const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
+const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
+
+const canvas = document.querySelector('canvas');
+const c = canvas.getContext('2d');
+
 
 canvas.width = innerWidth
 canvas.height = innerHeight
 
-const gravity = 0.5
+const gravity = 0.5;
 
 const mouse = {
   x: innerWidth / 2,
@@ -117,18 +121,34 @@ class Platform {
 
 
 function handleAnimateMoves(){
-    if(keys.right.pressed){
+
+    if(keys.right.pressed
+       && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
+        ){
         player.velocity.x = 5
     }
 
-
-    else if(keys.left.pressed){
+    else if(keys.left.pressed
+        && player.position.x > MIN_RIGHT_POSITION_BEFORE_SCROLL // to animate background
+        ){
         player.velocity.x = -5
     }
 
 
     else{
         player.velocity.x = 0
+
+        // starts to animate the background scrolling to right
+        if(keys.right.pressed){
+            // it imitates a parallax
+            platform.position.x -=5
+        }
+
+        // starts to animate the background scrolling to left
+        if(keys.left.pressed){
+            // it imitates a parallax
+            platform.position.x +=5
+        }
     }
 }
 
