@@ -96,10 +96,10 @@ class Player {
 
 
 class Platform {
-    constructor() {
+    constructor({x, y}) {
         this.position = {
-            x: 200,
-            y: 200
+            x,
+            y
         }
 
         this.width = 200;
@@ -165,7 +165,7 @@ function handleAnimateMoves() {
 }
 
 const player = new Player()
-const platforms = [new Platform()]
+const platforms = [new Platform({ x: 200, y: 200}), new Platform({x: 300, y: 300}),]
 // player.updatePlayer()
 
 const animate = () => {
