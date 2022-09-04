@@ -12,8 +12,8 @@ canvas.height = innerHeight
 const gravity = 0.5;
 
 const mouse = {
-  x: innerWidth / 2,
-  y: innerHeight / 2
+    x: innerWidth / 2,
+    y: innerHeight / 2
 }
 
 const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
@@ -42,10 +42,10 @@ const keys = {
 
 
 addEventListener('resize', () => {
-  canvas.width = innerWidth
-  canvas.height = innerHeight
+    canvas.width = innerWidth
+    canvas.height = innerHeight
 
-  player.drawPlayer()
+    player.drawPlayer()
 
 })
 
@@ -61,16 +61,16 @@ class Player {
             y: 0,
         }
 
-        this.width  = 50
+        this.width = 50
         this.height = 50
     }
 
-    drawPlayer(){
+    drawPlayer() {
         c.fillStyle = "blue"
         c.fillRect(this.position.x, this.position.y, this.width, this.height)
     }
 
-    updatePlayer(){
+    updatePlayer() {
         this.drawPlayer()
         this.position.y += this.velocity.y
         this.position.x += this.velocity.x
@@ -79,16 +79,16 @@ class Player {
 
 
         // if the bottom of the player reaches the bottom of the screen it will stop 
-        if(this.position.y + this.height + this.velocity.y <= canvas.height)
+        if (this.position.y + this.height + this.velocity.y <= canvas.height)
             this.velocity.y += gravity
-        else 
+        else
             this.velocity.y = 0
     }
 
-    actions = class actions{
-        static jump(){
+    actions = class actions {
+        static jump() {
             player.velocity.y -= 20
-        }   
+        }
     }
 
 }
@@ -96,17 +96,17 @@ class Player {
 
 
 class Platform {
-    constructor(){
+    constructor() {
         this.position = {
             x: 200,
             y: 200
         }
 
-        this.width  = 200; 
+        this.width = 200;
         this.height = 20;
     }
 
-    draw(){
+    draw() {
         c.style = "blue"
         c.fillRect(
             this.position.x,
@@ -120,48 +120,48 @@ class Platform {
 
 
 
-function handleAnimateMoves(){
+function handleAnimateMoves() {
 
-    if(keys.right.pressed
-       && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
-        ){
+    if (keys.right.pressed
+        && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
+    ) {
         player.velocity.x = 5
     }
 
-    else if(keys.left.pressed
+    else if (keys.left.pressed
         && player.position.x > MIN_RIGHT_POSITION_BEFORE_SCROLL // to animate background
-        ){
+    ) {
         player.velocity.x = -5
     }
 
 
-    else{
+    else {
         player.velocity.x = 0
 
         // starts to animate the background scrolling to right
-        if(keys.right.pressed){
+        if (keys.right.pressed) {
             // it imitates a parallax
-            
+
             platforms.map(
                 platform => {
-                    platform.position.x -=5
-                    }
-                )
-            }
+                    platform.position.x -= 5
+                }
+            )
+        }
 
         // starts to animate the background scrolling to left
-        if(keys.left.pressed){
+        if (keys.left.pressed) {
             // it imitates a parallax
 
-             
+
             platforms.map(
                 platform => {
-                    platform.position.x +=5
-                    }
-                )
-            }
-         
+                    platform.position.x += 5
+                }
+            )
         }
+
+    }
 }
 
 const player = new Player()
@@ -172,7 +172,7 @@ const animate = () => {
     // this create a loop
     requestAnimationFrame(animate)
     // maintain the player's shape
-    c.clearRect(0, 0, canvas.width, canvas.height)    
+    c.clearRect(0, 0, canvas.width, canvas.height)
     player.updatePlayer()
 
 
@@ -190,42 +190,42 @@ const animate = () => {
     platforms.map(
         platform => {
 
-    
-    // left side collision
-    const isPlayerBeforePlatform = player.position.x + player.width >= platform.position.x;
 
-    // right side collision
-    const isPlayerAfterPlatform = player.position.x <= platform.position.x + platform.width;
+            // left side collision
+            const isPlayerBeforePlatform = player.position.x + player.width >= platform.position.x;
 
-    const isPlayerBottomAbovePlatform =   player.position.y + player.height // bottom of the player
-                                          <= platform.position.y      // is above the platform
-                                          //prevents the player go upper than the platform 
-                                          && player.position.y + player.height + player.velocity.y >= platform.position.y;
+            // right side collision
+            const isPlayerAfterPlatform = player.position.x <= platform.position.x + platform.width;
 
-    
-    console.log(//collision
-    isPlayerBottomAbovePlatform
-    // left side collision
-    && isPlayerBeforePlatform
-    // right side collision
-    && isPlayerAfterPlatform)
+            const isPlayerBottomAbovePlatform = player.position.y + player.height // bottom of the player
+                <= platform.position.y      // is above the platform
+                //prevents the player go upper than the platform 
+                && player.position.y + player.height + player.velocity.y >= platform.position.y;
 
-    // handle the platforms collision
-    if (
-        //collision
-        isPlayerBottomAbovePlatform
-        // left side collision
-        && isPlayerBeforePlatform
-        // right side collision
-        && isPlayerAfterPlatform
-         ){
-            player.velocity.y = 0
-        }
+
+            console.log(//collision
+                isPlayerBottomAbovePlatform
+                // left side collision
+                && isPlayerBeforePlatform
+                // right side collision
+                && isPlayerAfterPlatform)
+
+            // handle the platforms collision
+            if (
+                //collision
+                isPlayerBottomAbovePlatform
+                // left side collision
+                && isPlayerBeforePlatform
+                // right side collision
+                && isPlayerAfterPlatform
+            ) {
+                player.velocity.y = 0
+            }
         }
     )
 }
 
-animate()   
+animate()
 
 // keys handler
 
@@ -237,17 +237,17 @@ When the key is down, it is pressed, when the key is up it was unpressed
 
 window.addEventListener('keydown', ({ keyCode }) => {
     console.log(keyCode)
-    handleCrontrolPlayer(keyCode)  
+    handleCrontrolPlayer(keyCode)
 })
 
 
 window.addEventListener('keyup', ({ keyCode }) => {
     console.log(keyCode)
-    handleStopPlayer(keyCode)  
+    handleStopPlayer(keyCode)
 })
 
-function handleCrontrolPlayer(keyCode){
-    switch(keyCode){
+function handleCrontrolPlayer(keyCode) {
+    switch (keyCode) {
         // For WASD
         case 87: //w
             actions.jump()
@@ -261,7 +261,7 @@ function handleCrontrolPlayer(keyCode){
         case 68: //d
             actions.goRight()
             break;
-              
+
         // For Arrows
         case 38: //up
             actions.jump()
@@ -280,8 +280,8 @@ function handleCrontrolPlayer(keyCode){
     console.log(keys.right.pressed)
 }
 
-function handleStopPlayer(keyCode){
-    switch(keyCode){
+function handleStopPlayer(keyCode) {
+    switch (keyCode) {
         // For WASD
         case 87: //w
             actions.stopJump()
@@ -295,7 +295,7 @@ function handleStopPlayer(keyCode){
         case 68: //d
             actions.stopRight()
             break;
-              
+
         // For Arrows
         case 38: //up
             actions.stopJump()
@@ -316,50 +316,50 @@ function handleStopPlayer(keyCode){
 }
 
 
-class actions{
-    static jump(){
+class actions {
+    static jump() {
         keys.up.pressed = true
         player.velocity.y -= 20
         console.log("run")
     }
 
-    static goLeft(){
+    static goLeft() {
         keys.left.pressed = true
         // player.velocity.x -= 20
     }
 
 
-    static goDown(){
+    static goDown() {
         keys.down.pressed = true
         player.velocity.y += 20
     }
 
-    static goRight(){
+    static goRight() {
         keys.right.pressed = true
         // player.velocity.x = 20
     }
 
 
-    static stopJump(){
+    static stopJump() {
         keys.up.pressed = false
         console.log("stop")
     }
 
 
-    static stopLeft(){
+    static stopLeft() {
         keys.left.pressed = false
         console.log("stop")
 
     }
 
 
-    static stopDown(){
+    static stopDown() {
         keys.down.pressed = false
         console.log("stop")
 
     }
 
-    static stopRight(){
+    static stopRight() {
         keys.right.pressed = false
         console.log("stop")
 
