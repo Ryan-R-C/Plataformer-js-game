@@ -149,11 +149,20 @@ const animate = () => {
     // animate moves
     handleAnimateMoves()
 
-    // handle the platforms colision
-    if ( player.position.y + player.height // bottom of the player
-         <= platform.position.y            // is above the platform
+    // handle the platforms collision
+    if (
+        //collision
+        player.position.y + player.height // bottom of the player
+        <= platform.position.y            // is above the platform
+        //prevents the player go upper than the platform 
          && player.position.y + player.height + player.velocity.y
          >= platform.position.y
+
+         // left side collision
+         && player.position.x + player.width >= platform.position.x
+
+         // left side collision
+         && player.position.x <= platform.position.x + platform.width
          ){
             player.velocity.y = 0
         }
