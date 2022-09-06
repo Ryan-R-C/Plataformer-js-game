@@ -2,6 +2,12 @@
 const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
 const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
 
+const END_OF_LEVEL = 500;
+
+
+
+let scrollOffset = 0; // how much the player has moved
+
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
@@ -141,24 +147,26 @@ function handleAnimateMoves() {
         // starts to animate the background scrolling to right
         if (keys.right.pressed) {
             // it imitates a parallax
-
             platforms.map(
                 platform => {
                     platform.position.x -= 5
                 }
             )
+
+            scrollOffset += 5
+
         }
 
         // starts to animate the background scrolling to left
         if (keys.left.pressed) {
             // it imitates a parallax
-
-
             platforms.map(
                 platform => {
                     platform.position.x += 5
                 }
             )
+
+            scrollOffset -= 5
         }
 
     }
@@ -223,6 +231,12 @@ const animate = () => {
             }
         }
     )
+
+    if(scrollOffset >= END_OF_LEVEL){
+        window.alert("YOU WIN, perfect!")
+
+        player.position.x = 0
+    }
 }
 
 animate()
