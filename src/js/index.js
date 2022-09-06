@@ -2,6 +2,17 @@
 const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
 const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
 
+const baseUrl = "https://raw.githubusercontent.com/Ryan-R-C/Plataformer-js-game/main/assets";
+
+const backgroundImage = `${baseUrl}/background.png`;
+const hills = `${baseUrl}/hills.png`;
+const platform = `${platform.png}/background.png`;
+const platformSmallTall = `${baseUrl}/platformSmallTall.png`;
+const spriteRunLeft = `${baseUrl}/spriteRunLeft.png`;
+const spriteRunRight = `${baseUrl}/spriteRunRight.png`;
+const spriteStandLeft = `${baseUrl}/spriteStandLeft.png`;
+const spriteStandRight = `${baseUrl}/spriteStandRight.png`;
+
 const END_OF_LEVEL = 500;
 
 
