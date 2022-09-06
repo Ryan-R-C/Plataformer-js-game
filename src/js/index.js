@@ -4,14 +4,41 @@ const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
 
 const baseUrl = "https://raw.githubusercontent.com/Ryan-R-C/Plataformer-js-game/main/assets";
 
-const backgroundImage = `${baseUrl}/background.png`;
-const hills = `${baseUrl}/hills.png`;
-const platform = `${platform.png}/background.png`;
-const platformSmallTall = `${baseUrl}/platformSmallTall.png`;
-const spriteRunLeft = `${baseUrl}/spriteRunLeft.png`;
-const spriteRunRight = `${baseUrl}/spriteRunRight.png`;
-const spriteStandLeft = `${baseUrl}/spriteStandLeft.png`;
-const spriteStandRight = `${baseUrl}/spriteStandRight.png`;
+const backgroundUrl = `${baseUrl}/background.png`;
+const hillsUrl = `${baseUrl}/hills.png`;
+const platformUrl = `${baseUrl}/platform.png`;
+const platformSmallTallUrl = `${baseUrl}/platformSmallTall.png`;
+const spriteRunLeftUrl = `${baseUrl}/spriteRunLeft.png`;
+const spriteRunRightUrl = `${baseUrl}/spriteRunRight.png`;
+const spriteStandLeftUrl = `${baseUrl}/spriteStandLeft.png`;
+const spriteStandRightUrl = `${baseUrl}/spriteStandRight.png`;
+
+
+const backgroundImage = new Image();
+backgroundImage.src = backgroundUrl;
+
+const hillsImage = new Image();
+hillsImage.src = hillsUrl;
+
+const platformImage = new Image();
+platformImage.src = platformUrl;
+
+const platformSmallTallImage = new Image();
+platformSmallTallImage.src = platformSmallTallUrl;
+
+const spriteRunLeftImage = new Image();
+spriteRunLeftImage.src = spriteRunLeftUrl;
+
+const spriteRunRightImage = new Image();
+spriteRunRightImage.src = spriteRunRightUrl;
+
+const spriteStandLeftImage = new Image();
+spriteStandLeftImage.src = spriteStandLeftUrl;
+
+const spriteStandRightImage = new Image();
+spriteStandRightImage.src = spriteStandRightUrl;
+
+
 
 const END_OF_LEVEL = 500;
 
@@ -23,8 +50,8 @@ const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
 
-canvas.width = innerWidth
-canvas.height = innerHeight
+canvas.width =  1024; // innerWidth
+canvas.height = 576; // innerHeight
 
 const gravity = 0.5;
 
@@ -57,7 +84,7 @@ const keys = {
 
 
 
-
+/*
 addEventListener('resize', () => {
     canvas.width = innerWidth
     canvas.height = innerHeight
@@ -65,6 +92,7 @@ addEventListener('resize', () => {
     player.drawPlayer()
 
 })
+*/
 
 class Player {
     constructor() {
@@ -113,23 +141,22 @@ class Player {
 
 
 class Platform {
-    constructor({x, y}) {
+    constructor({x, y, image}) {
         this.position = {
             x,
             y
         }
 
-        this.width = 200;
-        this.height = 20;
+        this.image = image;
+        this.width = image.width;
+        this.height = image.height;
     }
 
     draw() {
-        c.style = "blue"
-        c.fillRect(
+        c.drawImage(
+            this.image,
             this.position.x,
-            this.position.y,
-            this.width,
-            this.height,
+            this.position.y
         )
     }
 
@@ -184,17 +211,16 @@ function handleAnimateMoves() {
 }
 
 const player = new Player()
-const platforms = [new Platform({ x: 200, y: 200}), new Platform({x: 300, y: 300}),]
+const platforms = [new Platform({ x: 200, y: 0, image: platformImage}), new Platform({x: 300, y: 300, image: platformImage}),]
 // player.updatePlayer()
 
 const animate = () => {
     // this create a loop
     requestAnimationFrame(animate)
     // maintain the player's shape
-    c.clearRect(0, 0, canvas.width, canvas.height)
-    player.updatePlayer()
-
-
+    // c.clearRect(0, 0, canvas.width, canvas.height)
+    c.fillStyle = 'white'
+    c.fillRect(0, 0, canvas.width, canvas.height)
 
     platforms.map(
         platform => {
@@ -248,6 +274,9 @@ const animate = () => {
 
         player.position.x = 0
     }
+
+    //player has the maximun z-index doing that! 
+    player.updatePlayer()
 }
 
 animate()
