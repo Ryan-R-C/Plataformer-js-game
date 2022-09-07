@@ -12,8 +12,6 @@ const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
 const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
 
 
-const END_OF_LEVEL = 50000;
-
 let scrollOffset = 0; // how much the player has moved
 
 const mouse = {
@@ -60,8 +58,10 @@ const spriteStandRightImage = new Image();
 spriteStandRightImage.src = spriteStandRightUrl;
 
 
-const FLOOR_PLATFORM_Y = canvas.height - platformImage.height;
-const FLOOR_PLATFORM_X = platformImage.width - 2;
+const FLOOR_PLATFORM_Y = (image) => canvas.height - image.height;
+const FLOOR_PLATFORM_X = (image) => image.width - 2;
+
+const END_OF_LEVEL = 4310;
 
 
 const keys = {
@@ -97,8 +97,8 @@ addEventListener('resize', () => {
 class Player {
     constructor() {
         this.position = {
-            x: 100,
-            y: 100,
+            x: 10,
+            y: 10,
         }
 
         this.velocity = {
@@ -106,7 +106,7 @@ class Player {
             y: 0,
         }
 
-        this.speed = 5
+        this.speed = 10
         this.width = 50
         this.height = 50
 
@@ -199,6 +199,8 @@ class GenericObject {
 
 function handleAnimateMoves() {
 
+    console.log(scrollOffset)
+
     if (keys.right.pressed
         && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
     ) {
@@ -232,7 +234,7 @@ function handleAnimateMoves() {
             )
 
             
-            scrollOffset += 5
+            scrollOffset += player.speed
 
         }
 
@@ -259,21 +261,12 @@ function handleAnimateMoves() {
 }
 
 let player = new Player()
-let platforms = [
-    new Platform({ x: 0                 , y: FLOOR_PLATFORM_Y, image: platformImage}),
-    new Platform({x: FLOOR_PLATFORM_X   , y: FLOOR_PLATFORM_Y, image: platformImage}),
-    new Platform({x: FLOOR_PLATFORM_X *2 + 100, y: FLOOR_PLATFORM_Y, image: platformImage}),
-    new Platform({x: FLOOR_PLATFORM_X *3, y: FLOOR_PLATFORM_Y, image: platformImage}),
-]
+let platforms = []
 
-let genericObjects = [
-    new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
-    new GenericObject({ x: -1 , y: -1, image: hillsImage     , parallax: 2}),
-    new GenericObject({ x: 200 , y: 100, image: hillsImage     , parallax: 3}),
-
-]
+let genericObjects = []
 // player.updatePlayer()
 
+init()
 const animate = () => {
     // this create a loop
     requestAnimationFrame(animate)
@@ -333,9 +326,9 @@ const animate = () => {
 
     //player wins!
     if(scrollOffset >= END_OF_LEVEL){
-        window.alert("YOU WIN, perfect!")
+        // window.alert("YOU WIN, perfect!")
 
-        player.position.x = 0
+        init()
     }
 
     if(player.position.y > canvas.height){
@@ -484,17 +477,27 @@ class actions {
 
 
 function init(){
+    scrollOffset = 0;
     player = new Player()
     platforms = [
-        new Platform({ x: 0                 , y: FLOOR_PLATFORM_Y, image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X   , y: FLOOR_PLATFORM_Y, image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X *2 + 100, y: FLOOR_PLATFORM_Y, image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X *3, y: FLOOR_PLATFORM_Y, image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage) + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage), y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
+        new Platform({ x: 0                                      , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage)         , y:       FLOOR_PLATFORM_Y(platformImage)           , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 389, y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 150, y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *2 + 100, y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 100, y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *4 + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .6   , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *5 + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .3   , image:   platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *6 + 400, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .8   , image:   platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *7 + 400, y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image:   platformSmallTallImage}),
         ]
 
     genericObjects = [
         new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
-        new GenericObject({ x: -1 , y: -1, image: hillsImage     , parallax: 2}),
-        new GenericObject({ x: 200 , y: 100, image: hillsImage     , parallax: 3}),
+        new GenericObject({ x: 10 , y: -1, image: hillsImage     , parallax: 2}),
+        new GenericObject({ x: 700 , y: 50, image: hillsImage     , parallax: 3}),
+        new GenericObject({ x: 1200  , y: 120, image: hillsImage     , parallax: 4}),
         ]
 }
