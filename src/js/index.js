@@ -109,6 +109,9 @@ class Player {
         this.speed = 5
         this.width = 50
         this.height = 50
+
+        this.jumpBoost = 15
+        this.wheight = 20
     }
 
     drawPlayer() {
@@ -133,7 +136,11 @@ class Player {
 
     actions = class actions {
         static jump() {
-            player.velocity.y -= 20
+            player.velocity.y -= player.jumpBoost
+        }
+
+        static fall() {
+            player.velocity.y -= player.wheight
         }
     }
 
@@ -433,7 +440,7 @@ function handleStopPlayer(keyCode) {
 class actions {
     static jump() {
         keys.up.pressed = true
-        player.velocity.y -= 20
+        player.actions.jump()
     }
 
     static goLeft() {
@@ -444,7 +451,7 @@ class actions {
 
     static goDown() {
         keys.down.pressed = true
-        player.velocity.y += 20
+        player.actions.fall()
     }
 
     static goRight() {
