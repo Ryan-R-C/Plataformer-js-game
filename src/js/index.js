@@ -478,7 +478,9 @@ class actions {
 
 function init(){
     scrollOffset = 0;
-    player = new Player()
+
+    player = new Player();
+    
     platforms = [
         new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage) + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
         new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage), y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
@@ -492,12 +494,12 @@ function init(){
         new Platform({x: FLOOR_PLATFORM_X(platformImage) *5 + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .3   , image:   platformSmallTallImage}),
         new Platform({x: FLOOR_PLATFORM_X(platformImage) *6 + 400, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .8   , image:   platformSmallTallImage}),
         new Platform({x: FLOOR_PLATFORM_X(platformImage) *7 + 400, y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image:   platformSmallTallImage}),
-        ]
+        ];
 
     genericObjects = [
         new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
         new GenericObject({ x: 10 , y: -1, image: hillsImage     , parallax: 2}),
         new GenericObject({ x: 700 , y: 50, image: hillsImage     , parallax: 3}),
         new GenericObject({ x: 1200  , y: 120, image: hillsImage     , parallax: 4}),
-        ]
+        ];
 }
