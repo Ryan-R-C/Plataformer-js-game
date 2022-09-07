@@ -167,7 +167,7 @@ class Platform {
 
 
 class GenericObject {
-    constructor({x, y, image}) {
+    constructor({x, y, image, parallax}) {
         this.position = {
             x,
             y
@@ -176,6 +176,8 @@ class GenericObject {
         this.image = image;
         this.width = image.width;
         this.height = image.height;
+        this.parallax = parallax;
+        
     }
 
     draw() {
@@ -216,6 +218,14 @@ function handleAnimateMoves() {
                 }
             )
 
+
+            genericObjects.map(
+                genericObject => {
+                    genericObject.position.x  -= genericObject.parallax
+                }
+            )
+
+            
             scrollOffset += 5
 
         }
@@ -226,6 +236,13 @@ function handleAnimateMoves() {
             platforms.map(
                 platform => {
                     platform.position.x += 5
+                }
+            )
+
+
+            genericObjects.map(
+                genericObject => {
+                    genericObject.position.x  += genericObject.parallax
                 }
             )
 
@@ -244,8 +261,9 @@ const platforms = [
     ]
 
 const genericObjects = [
-    new GenericObject({ x: -1 , y: -1, image: backgroundImage}),
-    new GenericObject({ x: -1 , y: -1, image: hillsImage}),
+    new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
+    new GenericObject({ x: -1 , y: -1, image: hillsImage     , parallax: 2}),
+    new GenericObject({ x: 200 , y: 100, image: hillsImage     , parallax: 3}),
 
 ]
 // player.updatePlayer()
@@ -280,8 +298,6 @@ const animate = () => {
 
     platforms.map(
         platform => {
-
-
             // left side collision
             const isPlayerBeforePlatform = player.position.x + player.width >= platform.position.x;
 
@@ -294,12 +310,6 @@ const animate = () => {
                 && player.position.y + player.height + player.velocity.y >= platform.position.y;
 
 
-            console.log(//collision
-                isPlayerBottomAbovePlatform
-                // left side collision
-                && isPlayerBeforePlatform
-                // right side collision
-                && isPlayerAfterPlatform)
 
             // handle the platforms collision
             if (
@@ -336,13 +346,11 @@ When the key is down, it is pressed, when the key is up it was unpressed
 */
 
 window.addEventListener('keydown', ({ keyCode }) => {
-    console.log(keyCode)
     handleCrontrolPlayer(keyCode)
 })
 
 
 window.addEventListener('keyup', ({ keyCode }) => {
-    console.log(keyCode)
     handleStopPlayer(keyCode)
 })
 
@@ -377,7 +385,6 @@ function handleCrontrolPlayer(keyCode) {
             break;
     }
 
-    console.log(keys.right.pressed)
 }
 
 function handleStopPlayer(keyCode) {
@@ -411,7 +418,6 @@ function handleStopPlayer(keyCode) {
             break;
     }
 
-    console.log(keys.right.pressed)
 
 }
 
@@ -420,7 +426,6 @@ class actions {
     static jump() {
         keys.up.pressed = true
         player.velocity.y -= 20
-        console.log("run")
     }
 
     static goLeft() {
@@ -442,26 +447,21 @@ class actions {
 
     static stopJump() {
         keys.up.pressed = false
-        console.log("stop")
     }
 
 
     static stopLeft() {
         keys.left.pressed = false
-        console.log("stop")
 
     }
 
 
     static stopDown() {
         keys.down.pressed = false
-        console.log("stop")
-
     }
 
     static stopRight() {
         keys.right.pressed = false
-        console.log("stop")
 
     }
 }
