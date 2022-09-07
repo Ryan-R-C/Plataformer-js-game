@@ -11,6 +11,18 @@ const gravity = 0.5;
 const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
 const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
 
+
+const END_OF_LEVEL = 50000;
+
+let scrollOffset = 0; // how much the player has moved
+
+const mouse = {
+    x: innerWidth / 2,
+    y: innerHeight / 2
+}
+
+const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
+
 const baseUrl = "https://raw.githubusercontent.com/Ryan-R-C/Plataformer-js-game/main/assets";
 
 const backgroundUrl = `${baseUrl}/background.png`;
@@ -48,22 +60,8 @@ const spriteStandRightImage = new Image();
 spriteStandRightImage.src = spriteStandRightUrl;
 
 
-
-const END_OF_LEVEL = 500;
-
 const FLOOR_PLATFORM_Y = canvas.height - platformImage.height;
 const FLOOR_PLATFORM_X = platformImage.width - 2;
-
-let scrollOffset = 0; // how much the player has moved
-
-
-const mouse = {
-    x: innerWidth / 2,
-    y: innerHeight / 2
-}
-
-const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
-
 
 
 const keys = {
@@ -108,6 +106,7 @@ class Player {
             y: 0,
         }
 
+        this.speed = 5
         this.width = 50
         this.height = 50
     }
@@ -128,8 +127,8 @@ class Player {
         // if the bottom of the player reaches the bottom of the screen it will stop 
         if (this.position.y + this.height + this.velocity.y <= canvas.height)
             this.velocity.y += gravity
-        else
-            this.velocity.y = 0
+        // else
+        //     this.velocity.y = 0
     }
 
     actions = class actions {
@@ -196,13 +195,13 @@ function handleAnimateMoves() {
     if (keys.right.pressed
         && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
     ) {
-        player.velocity.x = 5
+        player.velocity.x = player.speed
     }
 
     else if (keys.left.pressed
         && player.position.x > MIN_RIGHT_POSITION_BEFORE_SCROLL // to animate background
     ) {
-        player.velocity.x = -5
+        player.velocity.x = -player.speed
     }
 
 
@@ -214,7 +213,7 @@ function handleAnimateMoves() {
             // it imitates a parallax
             platforms.map(
                 platform => {
-                    platform.position.x -= 5
+                    platform.position.x -= player.speed
                 }
             )
 
@@ -235,7 +234,7 @@ function handleAnimateMoves() {
             // it imitates a parallax
             platforms.map(
                 platform => {
-                    platform.position.x += 5
+                    platform.position.x += player.speed
                 }
             )
 
@@ -246,21 +245,21 @@ function handleAnimateMoves() {
                 }
             )
 
-            scrollOffset -= 5
+            scrollOffset -= player.speed
         }
 
     }
 }
 
-const player = new Player()
-const platforms = [
+let player = new Player()
+let platforms = [
     new Platform({ x: 0                 , y: FLOOR_PLATFORM_Y, image: platformImage}),
     new Platform({x: FLOOR_PLATFORM_X   , y: FLOOR_PLATFORM_Y, image: platformImage}),
-    new Platform({x: FLOOR_PLATFORM_X *2, y: FLOOR_PLATFORM_Y, image: platformImage}),
+    new Platform({x: FLOOR_PLATFORM_X *2 + 100, y: FLOOR_PLATFORM_Y, image: platformImage}),
     new Platform({x: FLOOR_PLATFORM_X *3, y: FLOOR_PLATFORM_Y, image: platformImage}),
-    ]
+]
 
-const genericObjects = [
+let genericObjects = [
     new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
     new GenericObject({ x: -1 , y: -1, image: hillsImage     , parallax: 2}),
     new GenericObject({ x: 200 , y: 100, image: hillsImage     , parallax: 3}),
@@ -325,11 +324,20 @@ const animate = () => {
         }
     )
 
+    //player wins!
     if(scrollOffset >= END_OF_LEVEL){
         window.alert("YOU WIN, perfect!")
 
         player.position.x = 0
     }
+
+    if(player.position.y > canvas.height){
+        // window.alert("YOU WIN, perfect!")
+
+        init()
+    }
+
+    
 
     //player has the maximun z-index doing that! 
     player.updatePlayer()
@@ -464,4 +472,22 @@ class actions {
         keys.right.pressed = false
 
     }
+}
+
+
+
+function init(){
+    player = new Player()
+    platforms = [
+        new Platform({ x: 0                 , y: FLOOR_PLATFORM_Y, image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X   , y: FLOOR_PLATFORM_Y, image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X *2 + 100, y: FLOOR_PLATFORM_Y, image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X *3, y: FLOOR_PLATFORM_Y, image: platformImage}),
+        ]
+
+    genericObjects = [
+        new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
+        new GenericObject({ x: -1 , y: -1, image: hillsImage     , parallax: 2}),
+        new GenericObject({ x: 200 , y: 100, image: hillsImage     , parallax: 3}),
+        ]
 }
