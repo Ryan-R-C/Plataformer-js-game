@@ -1,3 +1,12 @@
+const canvas = document.querySelector('canvas');
+
+
+canvas.width =  1024; // innerWidth
+canvas.height = 576; // innerHeight
+
+const c = canvas.getContext('2d');
+const gravity = 0.5;
+
 
 const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
 const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
@@ -42,18 +51,11 @@ spriteStandRightImage.src = spriteStandRightUrl;
 
 const END_OF_LEVEL = 500;
 
-
+const FLOOR_PLATFORM_Y = canvas.height - platformImage.height;
+const FLOOR_PLATFORM_X = platformImage.width - 2;
 
 let scrollOffset = 0; // how much the player has moved
 
-const canvas = document.querySelector('canvas');
-const c = canvas.getContext('2d');
-
-
-canvas.width =  1024; // innerWidth
-canvas.height = 576; // innerHeight
-
-const gravity = 0.5;
 
 const mouse = {
     x: innerWidth / 2,
@@ -211,7 +213,12 @@ function handleAnimateMoves() {
 }
 
 const player = new Player()
-const platforms = [new Platform({ x: 0, y: canvas.height - platformImage.height, image: platformImage}), new Platform({x: platformImage.width - 2, y: canvas.height - platformImage.height, image: platformImage}),]
+const platforms = [
+    new Platform({ x: 0                 , y: FLOOR_PLATFORM_Y, image: platformImage}),
+    new Platform({x: FLOOR_PLATFORM_X   , y: FLOOR_PLATFORM_Y, image: platformImage}),
+    new Platform({x: FLOOR_PLATFORM_X *2, y: FLOOR_PLATFORM_Y, image: platformImage}),
+    new Platform({x: FLOOR_PLATFORM_X *3, y: FLOOR_PLATFORM_Y, image: platformImage}),
+    ]
 // player.updatePlayer()
 
 const animate = () => {
