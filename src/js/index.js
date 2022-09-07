@@ -166,6 +166,29 @@ class Platform {
 
 
 
+class GenericObject {
+    constructor({x, y, image}) {
+        this.position = {
+            x,
+            y
+        }
+
+        this.image = image;
+        this.width = image.width;
+        this.height = image.height;
+    }
+
+    draw() {
+        c.drawImage(
+            this.image,
+            this.position.x,
+            this.position.y
+        )
+    }
+
+}
+
+
 function handleAnimateMoves() {
 
     if (keys.right.pressed
@@ -219,6 +242,12 @@ const platforms = [
     new Platform({x: FLOOR_PLATFORM_X *2, y: FLOOR_PLATFORM_Y, image: platformImage}),
     new Platform({x: FLOOR_PLATFORM_X *3, y: FLOOR_PLATFORM_Y, image: platformImage}),
     ]
+
+const genericObjects = [
+    new GenericObject({ x: -1 , y: -1, image: backgroundImage}),
+    new GenericObject({ x: -1 , y: -1, image: hillsImage}),
+
+]
 // player.updatePlayer()
 
 const animate = () => {
@@ -229,12 +258,22 @@ const animate = () => {
     c.fillStyle = 'white'
     c.fillRect(0, 0, canvas.width, canvas.height)
 
+
+    // genericObjects updates!
+    genericObjects.map(
+        genericObject => {
+            genericObject.draw()
+        }
+    )
+
+    // platform updates!
     platforms.map(
         platform => {
             platform.draw()
         }
     )
-    // platform updates!
+
+    
 
     // animate moves
     handleAnimateMoves()
