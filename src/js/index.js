@@ -211,7 +211,7 @@ function handleAnimateMoves() {
 }
 
 const player = new Player()
-const platforms = [new Platform({ x: 200, y: 0, image: platformImage}), new Platform({x: 300, y: 300, image: platformImage}),]
+const platforms = [new Platform({ x: 0, y: canvas.height - platformImage.height, image: platformImage}), new Platform({x: platformImage.width - 2, y: canvas.height - platformImage.height, image: platformImage}),]
 // player.updatePlayer()
 
 const animate = () => {
