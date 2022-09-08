@@ -97,8 +97,8 @@ addEventListener('resize', () => {
 class Player {
     constructor() {
         this.position = {
-            x: 10,
-            y: 10,
+            x: 20,
+            y: 20,
         }
 
         this.velocity = {
@@ -199,6 +199,8 @@ class GenericObject {
 
 function handleAnimateMoves() {
 
+    console.log(player.position.x)
+
     console.log(scrollOffset)
 
     if (keys.right.pressed
@@ -207,8 +209,15 @@ function handleAnimateMoves() {
         player.velocity.x = player.speed
     }
 
-    else if (keys.left.pressed
+    else if (
+        (
+        keys.left.pressed
         && player.position.x > MIN_RIGHT_POSITION_BEFORE_SCROLL // to animate background
+        )
+        || (keys.left.pressed
+        && scrollOffset == 0
+        && player.position.x > 0
+        )
     ) {
         player.velocity.x = -player.speed
     }
@@ -239,7 +248,8 @@ function handleAnimateMoves() {
         }
 
         // starts to animate the background scrolling to left
-        if (keys.left.pressed) {
+        if (keys.left.pressed
+            && scrollOffset > 0) {
             // it imitates a parallax
             platforms.map(
                 platform => {
@@ -438,18 +448,15 @@ class actions {
 
     static goLeft() {
         keys.left.pressed = true
-        // player.velocity.x -= 20
     }
 
 
     static goDown() {
         keys.down.pressed = true
-        player.actions.fall()
     }
 
     static goRight() {
         keys.right.pressed = true
-        // player.velocity.x = 20
     }
 
 
@@ -466,6 +473,7 @@ class actions {
 
     static stopDown() {
         keys.down.pressed = false
+        player.actions.fall()
     }
 
     static stopRight() {
@@ -501,5 +509,6 @@ function init(){
         new GenericObject({ x: 10 , y: -1, image: hillsImage     , parallax: 2}),
         new GenericObject({ x: 700 , y: 50, image: hillsImage     , parallax: 3}),
         new GenericObject({ x: 1200  , y: 120, image: hillsImage     , parallax: 4}),
+        new GenericObject({ x: 2400  , y: 120, image: hillsImage     , parallax: 4}),
         ];
 }
