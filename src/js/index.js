@@ -111,29 +111,44 @@ class Player {
         this.jumpBoost = 15
         this.wheight = 20
 
-        this.frames = 1
-       
+        this.frames = 0
+
+        this.sprites = {
+            stand:{ 
+                right: spriteStandRightImage,
+                left: spriteStandLeftImage,
+                cropWidth: 177,
+                width: 66
+            },
+            run: {
+                right: spriteRunRightImage,
+                left: spriteRunLeftImage,
+                cropWidth: 341,
+                width: 127.875
+            },
+        }
+
+        this.currentSprite = this.sprites.stand.right
+        this.currentCropWidth = this.sprites.stand.cropWidth
+        this.width =  this.sprites.stand.width
         /*
         spriteRunLeftImage
         spriteRunRightImage
         spriteStandLeftImage
         spriteStandRightImage
         */
-
-        this.image = spriteStandRightImage
-        this.width =  66
         this.height = 150
     }
 
     drawPlayer() {
         
         c.drawImage(
-            this.image,
+            this.currentSprite,
             // cropping
-            177 * this.frames, //top left corner
+            this.currentCropWidth * this.frames, //top left corner
             0, //bottom left corner
-            177, //top right corner
-            390, //bottom right corner
+            this.currentCropWidth, //top right corner
+            400, //bottom right corner
             this.position.x,
             this.position.y,
             this.width,
@@ -151,9 +166,10 @@ class Player {
 
         this.frames++
 
-        // there is just 28 frames in the image, so it creates a loop into it
-        if(this.frames > 28) this.frames = 0
-
+        // there is just 28 frames in the standing  sprite, so it creates a loop into it
+        if(this.frames > 59 && (this.currentSprite === this.sprites.stand.right || this.currentSprite === this.sprites.stand.left)) this.frames = 0
+        // there is just 29 frames in the running sprite, so it creates a loop into it
+        else if(this.frames > 29 && (this.currentSprite === this.sprites.run.right || this.currentSprite === this.sprites.run.left)) this.frames = 0
 
         // This updates gravity
 
@@ -479,6 +495,9 @@ class actions {
 
     static goLeft() {
         keys.left.pressed = true
+        player.currentSprite = player.sprites.run.left
+        player.currentCropWidth = player.sprites.run.cropWidth
+        player.width = player.sprites.run.width
     }
 
 
@@ -488,10 +507,13 @@ class actions {
 
     static goRight() {
         keys.right.pressed = true
+        player.currentSprite = player.sprites.run.right
+        player.currentCropWidth = player.sprites.run.cropWidth
+        player.width = player.sprites.run.width
     }
 
 
-    static stopJump() {
+    static stopJump() { 
         keys.up.pressed = false
     }
 
