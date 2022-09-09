@@ -82,7 +82,7 @@ const keys = {
     },
 }
 
-
+let lastKeyDown = ""
 
 /*
 addEventListener('resize', () => {
@@ -249,6 +249,50 @@ function handleAnimateMoves() {
     console.log(player.position.x)
 
     console.log(scrollOffset)
+    if(
+        lastKeyDown === "right" 
+        && player.currentSprite !== player.sprites.run.right
+    ){
+        player.frames = 1;
+        player.currentSprite = player.sprites.run.right
+
+        player.currentSprite = player.sprites.run.right
+        player.currentCropWidth = player.sprites.run.cropWidth
+        player.width = player.sprites.run.width
+    }
+
+    else if(
+        lastKeyDown === "left" 
+        && player.currentSprite !== player.sprites.run.left
+    ){
+        player.frames = 1;
+        player.currentSprite = player.sprites.run.left
+        player.currentCropWidth = player.sprites.run.cropWidth
+        player.width = player.sprites.run.width
+    }
+
+    else if(
+        !keys.left.pressed
+        && lastKeyDown === "left" 
+        && player.currentSprite !== player.sprites.stand.left
+    ){
+        player.frames = 1;
+        player.currentSprite = player.sprites.stand.left
+        player.currentCropWidth = player.sprites.stand.cropWidth
+        player.width = player.sprites.stand.width
+    }
+    else if(
+        !keys.right.pressed
+        && lastKeyDown === "right" 
+        && player.currentSprite !== player.sprites.stand.right
+    ){
+        player.frames = 1;
+        player.currentSprite = player.sprites.stand.right
+        player.currentCropWidth = player.sprites.stand.cropWidth
+        player.width = player.sprites.stand.width
+    }
+
+
 
     if (keys.right.pressed
         && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
@@ -495,9 +539,8 @@ class actions {
 
     static goLeft() {
         keys.left.pressed = true
-        player.currentSprite = player.sprites.run.left
-        player.currentCropWidth = player.sprites.run.cropWidth
-        player.width = player.sprites.run.width
+
+        lastKeyDown = "left"
     }
 
 
@@ -507,23 +550,25 @@ class actions {
 
     static goRight() {
         keys.right.pressed = true
-        player.currentSprite = player.sprites.run.right
-        player.currentCropWidth = player.sprites.run.cropWidth
-        player.width = player.sprites.run.width
+
+        lastKeyDown = "right"
     }
 
 
     static stopJump() { 
         keys.up.pressed = false
+
     }
 
 
     static stopLeft() {
         keys.left.pressed = false
+
         player.currentSprite = player.sprites.stand.left
         player.currentCropWidth = player.sprites.stand.cropWidth
         player.width = player.sprites.stand.width
 
+        lastKeyDown = ""
     }
 
 
@@ -534,9 +579,13 @@ class actions {
 
     static stopRight() {
         keys.right.pressed = false
+
         player.currentSprite = player.sprites.stand.right
         player.currentCropWidth = player.sprites.stand.cropWidth
         player.width = player.sprites.stand.width
+
+
+        lastKeyDown = ""
     }
 }
 
