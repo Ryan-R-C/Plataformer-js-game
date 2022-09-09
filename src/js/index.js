@@ -95,10 +95,10 @@ addEventListener('resize', () => {
 */
 
 class Player {
-    constructor() {
+    constructor(image) {
         this.position = {
-            x: 20,
-            y: 20,
+            x: 100,
+            y: 100,
         }
 
         this.velocity = {
@@ -107,22 +107,53 @@ class Player {
         }
 
         this.speed = 10
-        this.width = 50
-        this.height = 50
-
+        
         this.jumpBoost = 15
         this.wheight = 20
+
+        this.frames = 1
+       
+        /*
+        spriteRunLeftImage
+        spriteRunRightImage
+        spriteStandLeftImage
+        spriteStandRightImage
+        */
+
+        this.image = spriteStandRightImage
+        this.width =  66
+        this.height = 150
     }
 
     drawPlayer() {
-        c.fillStyle = "blue"
-        c.fillRect(this.position.x, this.position.y, this.width, this.height)
+        
+        c.drawImage(
+            this.image,
+            // cropping
+            177 * this.frames, //top left corner
+            0, //bottom left corner
+            177, //top right corner
+            390, //bottom right corner
+            this.position.x,
+            this.position.y,
+            this.width,
+            this.height
+        )
+
+
+
     }
 
     updatePlayer() {
         this.drawPlayer()
         this.position.y += this.velocity.y
         this.position.x += this.velocity.x
+
+        this.frames++
+
+        // there is just 28 frames in the image, so it creates a loop into it
+        if(this.frames > 28) this.frames = 0
+
 
         // This updates gravity
 
@@ -140,7 +171,7 @@ class Player {
         }
 
         static fall() {
-            player.velocity.y -= player.wheight
+            player.velocity.y += player.wheight
         }
     }
 
