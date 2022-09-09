@@ -520,6 +520,9 @@ class actions {
 
     static stopLeft() {
         keys.left.pressed = false
+        player.currentSprite = player.sprites.stand.left
+        player.currentCropWidth = player.sprites.stand.cropWidth
+        player.width = player.sprites.stand.width
 
     }
 
@@ -531,7 +534,9 @@ class actions {
 
     static stopRight() {
         keys.right.pressed = false
-
+        player.currentSprite = player.sprites.stand.right
+        player.currentCropWidth = player.sprites.stand.cropWidth
+        player.width = player.sprites.stand.width
     }
 }
 
