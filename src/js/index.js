@@ -617,7 +617,7 @@ init()
 
 setTimeout(() => {
     init()
-}, 50);
+}, 100);
 
 animate()
 
