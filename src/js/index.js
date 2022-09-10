@@ -1,8 +1,10 @@
 const canvas = document.querySelector('canvas');
 
 
-canvas.width =  1024; // innerWidth
-canvas.height = 576; // innerHeight
+canvas.width =   innerWidth
+// canvas.width =  1024; // innerWidth
+canvas.height = innerHeight
+// canvas.height = 576; // innerHeight
 
 const c = canvas.getContext('2d');
 const gravity = 0.5;
@@ -86,15 +88,10 @@ let lastKeyDown = ""
 
 
 
-/*
 addEventListener('resize', () => {
     canvas.width = innerWidth
     canvas.height = innerHeight
-
-    player.drawPlayer()
-
 })
-*/
 
 class Player {
     constructor(image) {
@@ -617,7 +614,7 @@ init()
 
 setTimeout(() => {
     init()
-}, 100);
+}, 200);
 
 animate()
 
