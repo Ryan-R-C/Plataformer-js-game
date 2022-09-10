@@ -84,6 +84,8 @@ const keys = {
 
 let lastKeyDown = ""
 
+
+
 /*
 addEventListener('resize', () => {
     canvas.width = innerWidth
@@ -246,9 +248,6 @@ class GenericObject {
 
 function handleAnimateMoves() {
 
-    console.log(player.position.x)
-
-    console.log(scrollOffset)
     if(
         lastKeyDown === "right" 
         && player.currentSprite !== player.sprites.run.right
@@ -361,13 +360,12 @@ function handleAnimateMoves() {
     }
 }
 
-let player = new Player()
+let player = new Player();
 let platforms = []
-
 let genericObjects = []
+
 // player.updatePlayer()
 
-init()
 const animate = () => {
     // this create a loop
     requestAnimationFrame(animate)
@@ -444,8 +442,6 @@ const animate = () => {
     player.updatePlayer()
 }
 
-animate()
-
 // keys handler
 
 // Animations
@@ -453,15 +449,6 @@ animate()
 /*
 When the key is down, it is pressed, when the key is up it was unpressed
 */
-
-window.addEventListener('keydown', ({ keyCode }) => {
-    handleCrontrolPlayer(keyCode)
-})
-
-
-window.addEventListener('keyup', ({ keyCode }) => {
-    handleStopPlayer(keyCode)
-})
 
 function handleCrontrolPlayer(keyCode) {
     switch (keyCode) {
@@ -593,22 +580,20 @@ class actions {
 
 function init(){
     scrollOffset = 0;
-
-    player = new Player();
     
     platforms = [
         new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage) + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage), y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
-        new Platform({ x: 0                                      , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage)         , y:       FLOOR_PLATFORM_Y(platformImage)           , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 389, y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 150, y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *2 + 100, y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 100, y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *4 + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .6   , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *5 + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .3   , image:   platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *6 + 400, y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .8   , image:   platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *7 + 400, y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image:   platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage)      , y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
+        new Platform({x: 0                                             , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage)               , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 389      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 150      , y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *2 + 100      , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 100      , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *4 + 200      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .6   , image: platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *5 + 200      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .3   , image:   platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *6 + 400      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .8   , image:   platformSmallTallImage}),
+        new Platform({x: FLOOR_PLATFORM_X(platformImage) *7 + 400      , y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image:   platformSmallTallImage}),
         ];
 
     genericObjects = [
@@ -618,4 +603,29 @@ function init(){
         new GenericObject({ x: 1200  , y: 120, image: hillsImage     , parallax: 4}),
         new GenericObject({ x: 2400  , y: 120, image: hillsImage     , parallax: 4}),
         ];
+
+
+    player = new Player();
 }
+
+/*===================================================================
+                    ACTIONS ON INITIATE PAGE
+===================================================================*/
+
+init()
+
+
+setTimeout(() => {
+    init()
+}, 50);
+
+animate()
+
+window.addEventListener('keydown', ({ keyCode }) => {
+    handleCrontrolPlayer(keyCode)
+})
+
+
+window.addEventListener('keyup', ({ keyCode }) => {
+    handleStopPlayer(keyCode)
+})
