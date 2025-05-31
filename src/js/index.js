@@ -1,628 +1,757 @@
-const canvas = document.querySelector('canvas');
+// ==================== CONSTANTS ====================
+const GAME_CONFIG = {
+    GRAVITY: 0.5,
+    MAX_RIGHT_POSITION_BEFORE_SCROLL: 400,
+    MIN_RIGHT_POSITION_BEFORE_SCROLL: 100,
+    END_OF_LEVEL: 4310,
+    PLAYER_SPEED: 10,
+    PLAYER_JUMP_BOOST: 15,
+    PLAYER_WEIGHT: 20,
+    PLAYER_WIDTH: 66,
+    PLAYER_HEIGHT: 150,
+    STAND_SPRITE_FRAMES: 59,
+    RUN_SPRITE_FRAMES: 29
+};
 
+const COLORS = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
 
-canvas.width =   innerWidth
-// canvas.width =  1024; // innerWidth
-canvas.height = innerHeight
-// canvas.height = 576; // innerHeight
+const BASE_URL = "https://raw.githubusercontent.com/Ryan-R-C/Plataformer-js-game/main/assets";
 
-const c = canvas.getContext('2d');
-const gravity = 0.5;
+const ASSET_URLS = {
+    background: `${BASE_URL}/background.png`,
+    hills: `${BASE_URL}/hills.png`,
+    platform: `${BASE_URL}/platform.png`,
+    platformSmallTall: `${BASE_URL}/platformSmallTall.png`,
+    spriteRunLeft: `${BASE_URL}/spriteRunLeft.png`,
+    spriteRunRight: `${BASE_URL}/spriteRunRight.png`,
+    spriteStandLeft: `${BASE_URL}/spriteStandLeft.png`,
+    spriteStandRight: `${BASE_URL}/spriteStandRight.png`
+};
 
+const KEY_CODES = {
+    // WASD
+    W: 87,
+    A: 65,
+    S: 83,
+    D: 68,
+    // Arrows
+    UP: 38,
+    LEFT: 37,
+    DOWN: 40,
+    RIGHT: 39
+};
 
-const MAX_RIGHT_POSITION_BEFORE_SCROLL = 400;
-const MIN_RIGHT_POSITION_BEFORE_SCROLL = 100;
+// ==================== UTILITY CLASSES ====================
+class Vector2 {
+    constructor(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+    }
 
+    add(vector) {
+        this.x += vector.x;
+        this.y += vector.y;
+        return this;
+    }
 
-let scrollOffset = 0; // how much the player has moved
+    multiply(scalar) {
+        this.x *= scalar;
+        this.y *= scalar;
+        return this;
+    }
 
-const mouse = {
-    x: innerWidth / 2,
-    y: innerHeight / 2
+    clone() {
+        return new Vector2(this.x, this.y);
+    }
 }
 
-const colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66']
+class Rectangle {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
 
-const baseUrl = "https://raw.githubusercontent.com/Ryan-R-C/Plataformer-js-game/main/assets";
+    get left() { return this.x; }
+    get right() { return this.x + this.width; }
+    get top() { return this.y; }
+    get bottom() { return this.y + this.height; }
 
-const backgroundUrl = `${baseUrl}/background.png`;
-const hillsUrl = `${baseUrl}/hills.png`;
-const platformUrl = `${baseUrl}/platform.png`;
-const platformSmallTallUrl = `${baseUrl}/platformSmallTall.png`;
-const spriteRunLeftUrl = `${baseUrl}/spriteRunLeft.png`;
-const spriteRunRightUrl = `${baseUrl}/spriteRunRight.png`;
-const spriteStandLeftUrl = `${baseUrl}/spriteStandLeft.png`;
-const spriteStandRightUrl = `${baseUrl}/spriteStandRight.png`;
-
-
-const backgroundImage = new Image();
-backgroundImage.src = backgroundUrl;
-
-const hillsImage = new Image();
-hillsImage.src = hillsUrl;
-
-const platformImage = new Image();
-platformImage.src = platformUrl;
-
-const platformSmallTallImage = new Image();
-platformSmallTallImage.src = platformSmallTallUrl;
-
-const spriteRunLeftImage = new Image();
-spriteRunLeftImage.src = spriteRunLeftUrl;
-
-const spriteRunRightImage = new Image();
-spriteRunRightImage.src = spriteRunRightUrl;
-
-const spriteStandLeftImage = new Image();
-spriteStandLeftImage.src = spriteStandLeftUrl;
-
-const spriteStandRightImage = new Image();
-spriteStandRightImage.src = spriteStandRightUrl;
-
-
-const FLOOR_PLATFORM_Y = (image) => canvas.height - image.height;
-const FLOOR_PLATFORM_X = (image) => image.width - 2;
-
-const END_OF_LEVEL = 4310;
-
-
-const keys = {
-    up: {
-        pressed: false
-    },
-
-    left: {
-        pressed: false
-    },
-
-    down: {
-        pressed: false
-    },
-
-    right: {
-        pressed: false
-    },
+    intersects(other) {
+        return this.left < other.right &&
+               this.right > other.left &&
+               this.top < other.bottom &&
+               this.bottom > other.top;
+    }
 }
 
-let lastKeyDown = ""
+// ==================== ASSET MANAGER ====================
+class AssetManager {
+    constructor() {
+        this.images = {};
+        this.loadedCount = 0;
+        this.totalAssets = 0;
+    }
 
+    async loadAssets() {
+        const imagePromises = Object.entries(ASSET_URLS).map(([key, url]) => {
+            return this.loadImage(key, url);
+        });
 
-
-addEventListener('resize', () => {
-    canvas.width = innerWidth
-    canvas.height = innerHeight
-})
-
-class Player {
-    constructor(image) {
-        this.position = {
-            x: 100,
-            y: 100,
-        }
-
-        this.velocity = {
-            x: 0,
-            y: 0,
-        }
-
-        this.speed = 10
+        this.totalAssets = imagePromises.length;
         
-        this.jumpBoost = 15
-        this.wheight = 20
+        try {
+            await Promise.all(imagePromises);
+            console.log('All assets loaded successfully');
+        } catch (error) {
+            console.error('Failed to load assets:', error);
+            throw error;
+        }
+    }
 
-        this.frames = 0
+    loadImage(key, url) {
+        return new Promise((resolve, reject) => {
+            const image = new Image();
+            
+            image.onload = () => {
+                this.images[key] = image;
+                this.loadedCount++;
+                resolve(image);
+            };
+            
+            image.onerror = () => {
+                reject(new Error(`Failed to load image: ${url}`));
+            };
+            
+            image.src = url;
+        });
+    }
 
+    getImage(key) {
+        const image = this.images[key];
+        if (!image) {
+            throw new Error(`Image not found: ${key}`);
+        }
+        return image;
+    }
+
+    getLoadingProgress() {
+        return this.totalAssets === 0 ? 0 : this.loadedCount / this.totalAssets;
+    }
+}
+
+// ==================== INPUT MANAGER ====================
+class InputManager {
+    constructor() {
+        this.keys = {
+            up: { pressed: false },
+            left: { pressed: false },
+            down: { pressed: false },
+            right: { pressed: false }
+        };
+        
+        this.lastKeyDown = '';
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        window.addEventListener('keydown', (event) => this.handleKeyDown(event));
+        window.addEventListener('keyup', (event) => this.handleKeyUp(event));
+    }
+
+    handleKeyDown(event) {
+        const { keyCode } = event;
+        
+        switch (keyCode) {
+            case KEY_CODES.W:
+            case KEY_CODES.UP:
+                this.keys.up.pressed = true;
+                break;
+            case KEY_CODES.A:
+            case KEY_CODES.LEFT:
+                this.keys.left.pressed = true;
+                this.lastKeyDown = 'left';
+                break;
+            case KEY_CODES.S:
+            case KEY_CODES.DOWN:
+                this.keys.down.pressed = true;
+                break;
+            case KEY_CODES.D:
+            case KEY_CODES.RIGHT:
+                this.keys.right.pressed = true;
+                this.lastKeyDown = 'right';
+                break;
+        }
+    }
+
+    handleKeyUp(event) {
+        const { keyCode } = event;
+        
+        switch (keyCode) {
+            case KEY_CODES.W:
+            case KEY_CODES.UP:
+                this.keys.up.pressed = false;
+                break;
+            case KEY_CODES.A:
+            case KEY_CODES.LEFT:
+                this.keys.left.pressed = false;
+                this.lastKeyDown = '';
+                break;
+            case KEY_CODES.S:
+            case KEY_CODES.DOWN:
+                this.keys.down.pressed = false;
+                break;
+            case KEY_CODES.D:
+            case KEY_CODES.RIGHT:
+                this.keys.right.pressed = false;
+                this.lastKeyDown = '';
+                break;
+        }
+    }
+
+    isKeyPressed(key) {
+        return this.keys[key]?.pressed || false;
+    }
+
+    getLastKeyDown() {
+        return this.lastKeyDown;
+    }
+
+    reset() {
+        Object.keys(this.keys).map(key => {
+            this.keys[key].pressed = false;
+        });
+        this.lastKeyDown = '';
+    }
+}
+
+// ==================== GAME OBJECTS ====================
+class GameObject {
+    constructor(x = 0, y = 0) {
+        this.position = new Vector2(x, y);
+        this.velocity = new Vector2(0, 0);
+        this.width = 0;
+        this.height = 0;
+    }
+
+    getBounds() {
+        return new Rectangle(this.position.x, this.position.y, this.width, this.height);
+    }
+
+    update(deltaTime) {
+        // Override in subclasses
+    }
+
+    draw(context) {
+        // Override in subclasses
+    }
+}
+
+class Player extends GameObject {
+    constructor(x = 100, y = 100) {
+        super(x, y);
+        
+        this.speed = GAME_CONFIG.PLAYER_SPEED;
+        this.jumpBoost = GAME_CONFIG.PLAYER_JUMP_BOOST;
+        this.weight = GAME_CONFIG.PLAYER_WEIGHT;
+        this.width = GAME_CONFIG.PLAYER_WIDTH;
+        this.height = GAME_CONFIG.PLAYER_HEIGHT;
+        
+        this.frames = 0;
+        this.isGrounded = false;
+        
         this.sprites = {
-            stand:{ 
-                right: spriteStandRightImage,
-                left: spriteStandLeftImage,
+            stand: {
+                right: null,
+                left: null,
                 cropWidth: 177,
                 width: 66
             },
             run: {
-                right: spriteRunRightImage,
-                left: spriteRunLeftImage,
+                right: null,
+                left: null,
                 cropWidth: 341,
                 width: 127.875
-            },
-        }
-
-        this.currentSprite = this.sprites.stand.right
-        this.currentCropWidth = this.sprites.stand.cropWidth
-        this.width =  this.sprites.stand.width
-        /*
-        spriteRunLeftImage
-        spriteRunRightImage
-        spriteStandLeftImage
-        spriteStandRightImage
-        */
-        this.height = 150
-    }
-
-    drawPlayer() {
+            }
+        };
         
-        c.drawImage(
+        this.currentSprite = null;
+        this.currentCropWidth = this.sprites.stand.cropWidth;
+        this.currentSpriteType = 'stand';
+        this.currentDirection = 'right';
+    }
+
+    initializeSprites(assetManager) {
+        try {
+            this.sprites.stand.right = assetManager.getImage('spriteStandRight');
+            this.sprites.stand.left = assetManager.getImage('spriteStandLeft');
+            this.sprites.run.right = assetManager.getImage('spriteRunRight');
+            this.sprites.run.left = assetManager.getImage('spriteRunLeft');
+            
+            this.currentSprite = this.sprites.stand.right;
+        } catch (error) {
+            console.error('Failed to initialize player sprites:', error);
+        }
+    }
+
+    jump() {
+        if (this.isGrounded) {
+            this.velocity.y = -this.jumpBoost;
+            this.isGrounded = false;
+        }
+    }
+
+    moveLeft() {
+        this.velocity.x = -this.speed;
+        this.updateSprite('run', 'left');
+    }
+
+    moveRight() {
+        this.velocity.x = this.speed;
+        this.updateSprite('run', 'right');
+    }
+
+    stopMoving() {
+        this.velocity.x = 0;
+    }
+
+    updateSprite(type, direction) {
+        if (this.currentSpriteType !== type || this.currentDirection !== direction) {
+            this.currentSpriteType = type;
+            this.currentDirection = direction;
+            this.currentSprite = this.sprites[type][direction];
+            this.currentCropWidth = this.sprites[type].cropWidth;
+            this.width = this.sprites[type].width;
+            this.frames = 0;
+        }
+    }
+
+    update(deltaTime, canvasHeight) {
+        // Update position
+        this.position.add(this.velocity);
+        
+        // Apply gravity
+        if (this.position.y + this.height < canvasHeight) {
+            this.velocity.y += GAME_CONFIG.GRAVITY;
+            this.isGrounded = false;
+        }
+        
+        // Update animation frames
+        this.updateAnimationFrame();
+        
+        // Reset if player falls off screen
+        if (this.position.y > canvasHeight) {
+            return 'restart';
+        }
+        
+        return null;
+    }
+
+    updateAnimationFrame() {
+        this.frames++;
+        
+        const maxFrames = this.currentSpriteType === 'stand' 
+            ? GAME_CONFIG.STAND_SPRITE_FRAMES 
+            : GAME_CONFIG.RUN_SPRITE_FRAMES;
+            
+        if (this.frames > maxFrames) {
+            this.frames = 0;
+        }
+    }
+
+    draw(context) {
+        if (!this.currentSprite) return;
+        
+        context.drawImage(
             this.currentSprite,
-            // cropping
-            this.currentCropWidth * this.frames, //top left corner
-            0, //bottom left corner
-            this.currentCropWidth, //top right corner
-            400, //bottom right corner
-            this.position.x,
-            this.position.y,
-            this.width,
-            this.height
-        )
-
-
-
+            this.currentCropWidth * this.frames, // Source X
+            0, // Source Y
+            this.currentCropWidth, // Source Width
+            400, // Source Height
+            this.position.x, // Destination X
+            this.position.y, // Destination Y
+            this.width, // Destination Width
+            this.height // Destination Height
+        );
     }
 
-    updatePlayer() {
-        this.drawPlayer()
-        this.position.y += this.velocity.y
-        this.position.x += this.velocity.x
-
-        this.frames++
-
-        // there is just 28 frames in the standing  sprite, so it creates a loop into it
-        if(this.frames > 59 && (this.currentSprite === this.sprites.stand.right || this.currentSprite === this.sprites.stand.left)) this.frames = 0
-        // there is just 29 frames in the running sprite, so it creates a loop into it
-        else if(this.frames > 29 && (this.currentSprite === this.sprites.run.right || this.currentSprite === this.sprites.run.left)) this.frames = 0
-
-        // This updates gravity
-
-
-        // if the bottom of the player reaches the bottom of the screen it will stop 
-        if (this.position.y + this.height + this.velocity.y <= canvas.height)
-            this.velocity.y += gravity
-        // else
-        //     this.velocity.y = 0
+    onGroundCollision() {
+        this.velocity.y = 0;
+        this.isGrounded = true;
     }
 
-    actions = class actions {
-        static jump() {
-            player.velocity.y -= player.jumpBoost
-        }
-
-        static fall() {
-            player.velocity.y += player.wheight
-        }
+    reset() {
+        this.position.x = 100;
+        this.position.y = 100;
+        this.velocity.x = 0;
+        this.velocity.y = 0;
+        this.frames = 0;
+        this.isGrounded = false;
+        this.updateSprite('stand', 'right');
     }
-
 }
 
-
-
-class Platform {
-    constructor({x, y, image}) {
-        this.position = {
-            x,
-            y
-        }
-
+class Platform extends GameObject {
+    constructor(x, y, image) {
+        super(x, y);
         this.image = image;
         this.width = image.width;
         this.height = image.height;
     }
 
-    draw() {
-        c.drawImage(
-            this.image,
-            this.position.x,
-            this.position.y
-        )
+    draw(context) {
+        context.drawImage(this.image, this.position.x, this.position.y);
     }
 
+    // Check collision with player from above
+    checkCollision(player) {
+        const playerBounds = player.getBounds();
+        const platformBounds = this.getBounds();
+        
+        const isPlayerAbovePlatform = playerBounds.bottom <= platformBounds.top + 10 &&
+                                      playerBounds.bottom + player.velocity.y >= platformBounds.top;
+        
+        const isPlayerWithinPlatformWidth = playerBounds.right > platformBounds.left &&
+                                            playerBounds.left < platformBounds.right;
+        
+        return isPlayerAbovePlatform && isPlayerWithinPlatformWidth;
+    }
 }
 
-
-
-class GenericObject {
-    constructor({x, y, image, parallax}) {
-        this.position = {
-            x,
-            y
-        }
-
+class GenericObject extends GameObject {
+    constructor(x, y, image, parallax) {
+        super(x, y);
         this.image = image;
         this.width = image.width;
         this.height = image.height;
         this.parallax = parallax;
+    }
+
+    draw(context) {
+        context.drawImage(this.image, this.position.x, this.position.y);
+    }
+
+    updateParallax() {
+        this.position.x -= this.parallax;
+    }
+}
+
+// ==================== CAMERA ====================
+class Camera {
+    constructor() {
+        this.scrollOffset = 0;
+    }
+
+    shouldScrollRight(player) {
+        return player.position.x >= GAME_CONFIG.MAX_RIGHT_POSITION_BEFORE_SCROLL;
+    }
+
+    shouldScrollLeft(player) {
+        return player.position.x <= GAME_CONFIG.MIN_RIGHT_POSITION_BEFORE_SCROLL && 
+               this.scrollOffset > 0;
+    }
+
+    scrollRight(platforms, genericObjects, speed) {
+        platforms.map(platform => {
+            platform.position.x -= speed;
+        });
+
+        genericObjects.map(obj => {
+            obj.updateParallax(speed / obj.parallax);
+        });
+
+        this.scrollOffset += speed;
+    }
+
+    scrollLeft(platforms, genericObjects, speed) {
+        if (this.scrollOffset <= 0) return;
+
+        platforms.map(platform => {
+            platform.position.x += speed;
+        });
+
+        genericObjects.map(obj => {
+            obj.position.x += obj.parallax;
+        });
+
+        this.scrollOffset -= speed;
+    }
+
+    reset() {
+        this.scrollOffset = 0;
+    }
+
+    hasReachedEnd() {
+        return this.scrollOffset >= GAME_CONFIG.END_OF_LEVEL;
+    }
+}
+
+// ==================== MAIN GAME CLASS ====================
+class Game {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.context = canvas.getContext('2d');
+        this.assetManager = new AssetManager();
+        this.inputManager = new InputManager();
+        this.camera = new Camera();
         
+        this.player = null;
+        this.platforms = [];
+        this.genericObjects = [];
+        
+        this.isRunning = false;
+        this.lastFrameTime = 0;
+        
+        this.setupCanvas();
+        this.setupEventListeners();
     }
 
-    draw() {
-        c.drawImage(
-            this.image,
-            this.position.x,
-            this.position.y
-        )
+    setupCanvas() {
+        this.resizeCanvas();
     }
 
-}
-
-
-function handleAnimateMoves() {
-
-    if(
-        lastKeyDown === "right" 
-        && player.currentSprite !== player.sprites.run.right
-    ){
-        player.frames = 1;
-        player.currentSprite = player.sprites.run.right
-
-        player.currentSprite = player.sprites.run.right
-        player.currentCropWidth = player.sprites.run.cropWidth
-        player.width = player.sprites.run.width
+    setupEventListeners() {
+        window.addEventListener('resize', () => this.resizeCanvas());
     }
 
-    else if(
-        lastKeyDown === "left" 
-        && player.currentSprite !== player.sprites.run.left
-    ){
-        player.frames = 1;
-        player.currentSprite = player.sprites.run.left
-        player.currentCropWidth = player.sprites.run.cropWidth
-        player.width = player.sprites.run.width
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
     }
 
-    else if(
-        !keys.left.pressed
-        && lastKeyDown === "left" 
-        && player.currentSprite !== player.sprites.stand.left
-    ){
-        player.frames = 1;
-        player.currentSprite = player.sprites.stand.left
-        player.currentCropWidth = player.sprites.stand.cropWidth
-        player.width = player.sprites.stand.width
-    }
-    else if(
-        !keys.right.pressed
-        && lastKeyDown === "right" 
-        && player.currentSprite !== player.sprites.stand.right
-    ){
-        player.frames = 1;
-        player.currentSprite = player.sprites.stand.right
-        player.currentCropWidth = player.sprites.stand.cropWidth
-        player.width = player.sprites.stand.width
+    async initialize() {
+        try {
+            await this.assetManager.loadAssets();
+            this.initializeGameObjects();
+            this.isRunning = true;
+            console.log('Game initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize game:', error);
+            throw error;
+        }
     }
 
-
-
-    if (keys.right.pressed
-        && player.position.x < MAX_RIGHT_POSITION_BEFORE_SCROLL // to animate background
-    ) {
-        player.velocity.x = player.speed
+    initializeGameObjects() {
+        // Initialize player
+        this.player = new Player();
+        this.player.initializeSprites(this.assetManager);
+        
+        // Initialize platforms
+        this.createPlatforms();
+        
+        // Initialize background objects
+        this.createGenericObjects();
     }
 
-    else if (
-        (
-        keys.left.pressed
-        && player.position.x > MIN_RIGHT_POSITION_BEFORE_SCROLL // to animate background
-        )
-        || (keys.left.pressed
-        && scrollOffset == 0
-        && player.position.x > 0
-        )
-    ) {
-        player.velocity.x = -player.speed
+    createPlatforms() {
+        const platformImage = this.assetManager.getImage('platform');
+        const platformSmallTallImage = this.assetManager.getImage('platformSmallTall');
+        
+        const floorY = (image) => this.canvas.height - image.height;
+        const platformWidth = (image) => image.width - 2;
+
+        this.platforms = [
+            new Platform(platformWidth(platformSmallTallImage) + 200, floorY(platformSmallTallImage) - 100, platformSmallTallImage),
+            new Platform(platformWidth(platformSmallTallImage), floorY(platformSmallTallImage), platformSmallTallImage),
+            new Platform(0, floorY(platformImage), platformImage),
+            new Platform(platformWidth(platformImage), floorY(platformImage), platformImage),
+            new Platform(platformWidth(platformImage) * 3 + 389, floorY(platformSmallTallImage) - 100, platformSmallTallImage),
+            new Platform(platformWidth(platformImage) * 3 + 150, floorY(platformSmallTallImage), platformSmallTallImage),
+            new Platform(platformWidth(platformImage) * 2 + 100, floorY(platformImage), platformImage),
+            new Platform(platformWidth(platformImage) * 3 + 100, floorY(platformImage), platformImage),
+            new Platform(platformWidth(platformImage) * 4 + 200, floorY(platformSmallTallImage) * 0.6, platformSmallTallImage),
+            new Platform(platformWidth(platformImage) * 5 + 200, floorY(platformSmallTallImage) * 0.3, platformSmallTallImage),
+            new Platform(platformWidth(platformImage) * 6 + 400, floorY(platformSmallTallImage) * 0.8, platformSmallTallImage),
+            new Platform(platformWidth(platformImage) * 7 + 400, floorY(platformSmallTallImage), platformSmallTallImage),
+        ];
     }
 
+    createGenericObjects() {
+        const backgroundImage = this.assetManager.getImage('background');
+        const hillsImage = this.assetManager.getImage('hills');
 
-    else {
-        player.velocity.x = 0
+        this.genericObjects = [
+            new GenericObject(-1, -1, backgroundImage, 0),
+            new GenericObject(10, -1, hillsImage, 2),
+            new GenericObject(700, 50, hillsImage, 3),
+            new GenericObject(1200, 120, hillsImage, 4),
+            new GenericObject(2400, 120, hillsImage, 4),
+        ];
+    }
 
-        // starts to animate the background scrolling to right
-        if (keys.right.pressed) {
-            // it imitates a parallax
-            platforms.map(
-                platform => {
-                    platform.position.x -= player.speed
-                }
-            )
+    handleInput() {
+        const input = this.inputManager;
+        const lastKey = input.getLastKeyDown();
 
-
-            genericObjects.map(
-                genericObject => {
-                    genericObject.position.x  -= genericObject.parallax
-                }
-            )
-
-            
-            scrollOffset += player.speed
-
+        // Handle jumping
+        if (input.isKeyPressed('up')) {
+            this.player.jump();
         }
 
-        // starts to animate the background scrolling to left
-        if (keys.left.pressed
-            && scrollOffset > 0) {
-            // it imitates a parallax
-            platforms.map(
-                platform => {
-                    platform.position.x += player.speed
-                }
-            )
-
-
-            genericObjects.map(
-                genericObject => {
-                    genericObject.position.x  += genericObject.parallax
-                }
-            )
-
-            scrollOffset -= player.speed
-        }
-
-    }
-}
-
-let player = new Player();
-let platforms = []
-let genericObjects = []
-
-// player.updatePlayer()
-
-const animate = () => {
-    // this create a loop
-    requestAnimationFrame(animate)
-    // maintain the player's shape
-    // c.clearRect(0, 0, canvas.width, canvas.height)
-    c.fillStyle = 'white'
-    c.fillRect(0, 0, canvas.width, canvas.height)
-
-
-    // genericObjects updates!
-    genericObjects.map(
-        genericObject => {
-            genericObject.draw()
-        }
-    )
-
-    // platform updates!
-    platforms.map(
-        platform => {
-            platform.draw()
-        }
-    )
-
-    
-
-    // animate moves
-    handleAnimateMoves()
-
-    platforms.map(
-        platform => {
-            // left side collision
-            const isPlayerBeforePlatform = player.position.x + player.width >= platform.position.x;
-
-            // right side collision
-            const isPlayerAfterPlatform = player.position.x <= platform.position.x + platform.width;
-
-            const isPlayerBottomAbovePlatform = player.position.y + player.height // bottom of the player
-                <= platform.position.y      // is above the platform
-                //prevents the player go upper than the platform 
-                && player.position.y + player.height + player.velocity.y >= platform.position.y;
-
-
-
-            // handle the platforms collision
-            if (
-                //collision
-                isPlayerBottomAbovePlatform
-                // left side collision
-                && isPlayerBeforePlatform
-                // right side collision
-                && isPlayerAfterPlatform
-            ) {
-                player.velocity.y = 0
+        // Handle horizontal movement
+        if (input.isKeyPressed('left')) {
+            if (this.player.position.x > GAME_CONFIG.MIN_RIGHT_POSITION_BEFORE_SCROLL || 
+                (this.camera.scrollOffset === 0 && this.player.position.x > 0)) {
+                this.player.moveLeft();
+            } else if (this.camera.scrollOffset > 0) {
+                this.player.stopMoving();
+                this.camera.scrollLeft(this.platforms, this.genericObjects, GAME_CONFIG.PLAYER_SPEED);
             }
+        } else if (input.isKeyPressed('right')) {
+            if (this.player.position.x < GAME_CONFIG.MAX_RIGHT_POSITION_BEFORE_SCROLL) {
+                this.player.moveRight();
+            } else {
+                this.player.stopMoving();
+                this.camera.scrollRight(this.platforms, this.genericObjects, GAME_CONFIG.PLAYER_SPEED);
+            }
+        } else {
+            this.player.stopMoving();
         }
-    )
 
-    //player wins!
-    if(scrollOffset >= END_OF_LEVEL){
-        // window.alert("YOU WIN, perfect!")
-
-        init()
+        // Update player sprite based on movement
+        if (input.isKeyPressed('left')) {
+            this.player.updateSprite('run', 'left');
+        } else if (input.isKeyPressed('right')) {
+            this.player.updateSprite('run', 'right');
+        } else {
+            const direction = lastKey === 'left' ? 'left' : 'right';
+            this.player.updateSprite('stand', direction);
+        }
     }
 
-    if(player.position.y > canvas.height){
-        // window.alert("YOU WIN, perfect!")
-
-        init()
+    update(deltaTime) {
+        this.handleInput();
+        
+        // Update player
+        const playerState = this.player.update(deltaTime, this.canvas.height);
+        
+        // Check for restart conditions
+        if (playerState === 'restart' || this.camera.hasReachedEnd()) {
+            this.restart();
+            return;
+        }
+        
+        // Handle platform collisions
+        this.checkPlatformCollisions();
     }
 
-    
-
-    //player has the maximun z-index doing that! 
-    player.updatePlayer()
-}
-
-// keys handler
-
-// Animations
-
-/*
-When the key is down, it is pressed, when the key is up it was unpressed
-*/
-
-function handleCrontrolPlayer(keyCode) {
-    switch (keyCode) {
-        // For WASD
-        case 87: //w
-            actions.jump()
-            break;
-        case 65: //a
-            actions.goLeft()
-            break;
-        case 83: //s
-            actions.goDown()
-            break;
-        case 68: //d
-            actions.goRight()
-            break;
-
-        // For Arrows
-        case 38: //up
-            actions.jump()
-            break;
-        case 37: //left
-            actions.goLeft()
-            break;
-        case 40: //down
-            actions.goDown()
-            break;
-        case 39: //right
-            actions.goRight()
-            break;
+    checkPlatformCollisions() {
+        this.platforms.map(platform => {
+            if (platform.checkCollision(this.player)) {
+                this.player.onGroundCollision();
+                // Adjust player position to sit exactly on platform
+                this.player.position.y = platform.position.y - this.player.height;
+            }
+        });
     }
 
-}
-
-function handleStopPlayer(keyCode) {
-    switch (keyCode) {
-        // For WASD
-        case 87: //w
-            actions.stopJump()
-            break;
-        case 65: //a
-            actions.stopLeft()
-            break;
-        case 83: //s
-            actions.stopDown()
-            break;
-        case 68: //d
-            actions.stopRight()
-            break;
-
-        // For Arrows
-        case 38: //up
-            actions.stopJump()
-            break;
-        case 37: //left
-            actions.stopLeft()
-            break;
-        case 40: //down
-            actions.stopDown()
-            break;
-        case 39: //right
-            actions.stopRight()
-            break;
+    render() {
+        // Clear canvas
+        this.context.fillStyle = 'white';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw background objects
+        this.genericObjects.map(obj => obj.draw(this.context));
+        
+        // Draw platforms
+        this.platforms.map(platform => platform.draw(this.context));
+        
+        // Draw player (highest z-index)
+        this.player.draw(this.context);
     }
 
-
-}
-
-
-class actions {
-    static jump() {
-        keys.up.pressed = true
-        player.actions.jump()
+    gameLoop(currentTime) {
+        const deltaTime = currentTime - this.lastFrameTime;
+        this.lastFrameTime = currentTime;
+        
+        this.update(deltaTime);
+        this.render();
+        
+        requestAnimationFrame((time) => this.gameLoop(time));
     }
 
-    static goLeft() {
-        keys.left.pressed = true
-
-        lastKeyDown = "left"
+    start() {
+        if (this.isRunning) {
+            this.gameLoop(0);
+        }
     }
 
-
-    static goDown() {
-        keys.down.pressed = true
+    restart() {
+        this.player.reset();
+        this.camera.reset();
+        this.createPlatforms();
+        this.createGenericObjects();
+        console.log('Game restarted');
     }
 
-    static goRight() {
-        keys.right.pressed = true
-
-        lastKeyDown = "right"
-    }
-
-
-    static stopJump() { 
-        keys.up.pressed = false
-
-    }
-
-
-    static stopLeft() {
-        keys.left.pressed = false
-
-        player.currentSprite = player.sprites.stand.left
-        player.currentCropWidth = player.sprites.stand.cropWidth
-        player.width = player.sprites.stand.width
-
-        lastKeyDown = ""
-    }
-
-
-    static stopDown() {
-        keys.down.pressed = false
-        player.actions.fall()
-    }
-
-    static stopRight() {
-        keys.right.pressed = false
-
-        player.currentSprite = player.sprites.stand.right
-        player.currentCropWidth = player.sprites.stand.cropWidth
-        player.width = player.sprites.stand.width
-
-
-        lastKeyDown = ""
+    stop() {
+        this.isRunning = false;
     }
 }
 
+// ==================== GAME APPLICATION ====================
+class GameApplication {
+    constructor() {
+        this.game = null;
+        this.canvas = null;
+    }
 
+    async initialize() {
+        try {
+            // Get canvas element
+            this.canvas = document.querySelector('canvas');
+            if (!this.canvas) {
+                throw new Error('Canvas element not found');
+            }
 
-function init(){
-    scrollOffset = 0;
-    
-    platforms = [
-        new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage) + 200, y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformSmallTallImage)      , y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
-        new Platform({x: 0                                             , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage)               , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 389      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) - 100  , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 150      , y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *2 + 100      , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *3 + 100      , y: FLOOR_PLATFORM_Y(platformImage)                 , image: platformImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *4 + 200      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .6   , image: platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *5 + 200      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .3   , image:   platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *6 + 400      , y: FLOOR_PLATFORM_Y(platformSmallTallImage) * .8   , image:   platformSmallTallImage}),
-        new Platform({x: FLOOR_PLATFORM_X(platformImage) *7 + 400      , y: FLOOR_PLATFORM_Y(platformSmallTallImage)        , image:   platformSmallTallImage}),
-        ];
+            // Create and initialize game
+            this.game = new Game(this.canvas);
+            await this.game.initialize();
+            
+            // Start the game
+            this.game.start();
+            
+            console.log('Game application started successfully');
+        } catch (error) {
+            console.error('Failed to start game application:', error);
+            this.showErrorMessage(error.message);
+        }
+    }
 
-    genericObjects = [
-        new GenericObject({ x: -1 , y: -1, image: backgroundImage, parallax: 0}),
-        new GenericObject({ x: 10 , y: -1, image: hillsImage     , parallax: 2}),
-        new GenericObject({ x: 700 , y: 50, image: hillsImage     , parallax: 3}),
-        new GenericObject({ x: 1200  , y: 120, image: hillsImage     , parallax: 4}),
-        new GenericObject({ x: 2400  , y: 120, image: hillsImage     , parallax: 4}),
-        ];
-
-
-    player = new Player();
+    showErrorMessage(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ff4444;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+        `;
+        errorDiv.textContent = `Error: ${message}`;
+        document.body.appendChild(errorDiv);
+    }
 }
 
-/*===================================================================
-                    ACTIONS ON INITIATE PAGE
-===================================================================*/
+// ==================== INITIALIZATION ====================
+// Initialize the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new GameApplication();
+    app.initialize();
+});
 
-init()
-
-
-setTimeout(() => {
-    init()
-}, 200);
-
-animate()
-
-window.addEventListener('keydown', ({ keyCode }) => {
-    handleCrontrolPlayer(keyCode)
-})
-
-
-window.addEventListener('keyup', ({ keyCode }) => {
-    handleStopPlayer(keyCode)
-})
+// Fallback initialization for immediate execution
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new GameApplication();
+        app.initialize();
+    });
+} else {
+    const app = new GameApplication();
+    app.initialize();
+}
