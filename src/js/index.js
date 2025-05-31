@@ -516,8 +516,13 @@ class Game {
     }
 
     resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        /*
+         * Removed dynamic resizing for platforms break.
+         */
+        // this.canvas.width = window.innerWidth;
+        this.canvas.width = 1024;
+        // this.canvas.height = window.innerHeight;
+        this.canvas.height = 576;
     }
 
     async initialize() {
