@@ -34,7 +34,7 @@ export class Camera {
     });
 
     genericObjects.forEach(obj => {
-      obj.position.x += obj.parallax * speed;
+      obj.position.x += obj.parallax;
     });
 
     this.scrollOffset -= speed;
